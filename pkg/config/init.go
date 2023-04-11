@@ -10,13 +10,14 @@ import (
 
 var (
 	CommonInfo = &model.CommonModel{
-		RuntimePath: "/var/run/icewhale",
+		RuntimePath: "/var/run/casaos",
 	}
 
 	AppInfo = &model.APPModel{
-		LogPath:     "/var/log/icewhale",
+		LogPath:     "/var/log/casaos",
 		LogSaveName: common.FilesBackupServiceName,
 		LogFileExt:  "log",
+		BackupPath:  "/DATA/Backup",
 	}
 
 	Cfg            *ini.File

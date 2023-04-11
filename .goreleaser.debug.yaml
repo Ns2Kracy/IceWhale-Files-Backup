@@ -1,0 +1,74 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+project_name: icewhale-files-backup
+before:
+  hooks:
+    - go generate
+    - go run github.com/google/go-licenses@latest check . --disallowed_types=restricted
+    - go mod tidy
+    - go test -race -v ./... -timeout 30m
+builds:
+  - id: icewhale-files-backup-amd64
+    binary: build/sysroot/usr/bin/icewhale-files-backup
+    env:
+      - CC=x86_64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
+      - osusergo
+      - purego
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: icewhale-files-backup-arm64
+    binary: build/sysroot/usr/bin/icewhale-files-backup
+    env:
+      - CC=aarch64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
+    ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
+      - osusergo
+      - purego
+    goos:
+      - linux
+    goarch:
+      - arm64
+archives:
+  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-v{{ .Version }}"
+    id: icewhale-files-backup
+    builds:
+      - icewhale-files-backup-amd64
+      - icewhale-files-backup-arm64
+    files:
+      - build/**/*
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ incpatch .Version }}-snapshot"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+release:
+  github:
+    owner: IceWhaleTech
+    name: IceWhale-Files-Backup
+  draft: true
+  prerelease: auto
+  mode: replace
+  name_template: "v{{ .Version }}"

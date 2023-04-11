@@ -8,4 +8,5 @@ type APPModel struct {
 	LogPath     string
 	LogSaveName string
 	LogFileExt  string
+	BackupPath  string
 }
