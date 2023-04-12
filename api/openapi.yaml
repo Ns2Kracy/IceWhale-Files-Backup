@@ -14,7 +14,7 @@ security:
 paths:
   /backup:
     get:
-      summary: Get all backup folders
+      summary: Get all folder backups
       operationId: getAllFolderBackups
       responses:
         "200":
@@ -24,7 +24,7 @@ paths:
 
   /backup/{client_id}:
     get:
-      summary: Get backup folders by client ID
+      summary: Get folder backups by client ID
       operationId: getFolderBackupsByClientID
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
@@ -37,7 +37,7 @@ paths:
           $ref: "#/components/responses/ResponseInternalServerError"
 
     post:
-      summary: Add a backup folder
+      summary: Add a folder backup
       operationId: addFolderBackup
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
@@ -52,7 +52,7 @@ paths:
           $ref: "#/components/responses/ResponseInternalServerError"
 
     delete:
-      summary: Delete a backup folder
+      summary: Delete a folder backup
       operationId: deleteFolderBackup
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
@@ -210,10 +210,10 @@ components:
 
         keep_history_copy:
           description: |
-            whether to keep history copy of files in the backup folder
+            whether to keep history copy of files in the folder backup
 
-            > - If set to `true`, will keep history copy of files in the backup folder.
-            > - If set to `false`, will only keep the latest version of files in the backup folder.
+            > - If set to `true`, will keep history copy of files in the folder backup.
+            > - If set to `false`, will only keep the latest version of files in the folder backup.
 
         folder_backup_path:
           description: path of the folder from server side to store backup files
@@ -222,13 +222,13 @@ components:
           example: /DATA/Backup/SomeClientID/C/Users/icewhale/Downloads
 
         folder_backup_count:
-          description: number of files in the backup folder
+          description: number of files in the folder backup
           readOnly: true
           type: integer
           example: 2
 
         folder_backup_size:
-          description: size of the backup folder in bytes
+          description: size of the folder backup in bytes
           readOnly: true
           type: integer
           example: 1024
