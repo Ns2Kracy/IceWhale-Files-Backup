@@ -214,7 +214,9 @@ components:
 
             > - If set to `true`, will keep history copy of files in the folder backup.
             > - If set to `false`, will only keep the latest version of files in the folder backup.
-
+          type: boolean
+          default: true
+          
         folder_backup_path:
           description: path of the folder from server side to store backup files
           readOnly: true
