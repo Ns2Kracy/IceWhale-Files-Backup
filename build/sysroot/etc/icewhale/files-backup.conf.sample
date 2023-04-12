@@ -5,4 +5,6 @@ RuntimePath = /var/run/casaos
 LogPath = /var/log/icewhale/
 LogSaveName = files-backup
 LogFileExt = log
-BackupFolder = /DATA/Backup
+WebDAVPort = 7070
+WebDAVRootPath = /DATA
+BackupRootPath = /DATA/Backup

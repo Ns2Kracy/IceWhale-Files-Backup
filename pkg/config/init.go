@@ -17,7 +17,11 @@ var (
 		LogPath:     "/var/log/casaos",
 		LogSaveName: common.FilesBackupServiceName,
 		LogFileExt:  "log",
-		BackupPath:  "/DATA/Backup",
+
+		WebDAVPort:     "7070",
+		WebDAVRootPath: "/DATA",
+
+		BackupRootPath: "/DATA/Backup",
 	}
 
 	Cfg            *ini.File

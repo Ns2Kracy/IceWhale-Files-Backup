@@ -46,7 +46,7 @@ func NewAPI() codegen.ServerInterface {
 	return &api{}
 }
 
-func InitV2Router() http.Handler {
+func InitV2Router() (string, http.Handler) {
 	e := echo.New()
 
 	e.Use((echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
@@ -89,11 +89,11 @@ func InitV2Router() http.Handler {
 
 	codegen.RegisterHandlersWithBaseURL(e, NewAPI(), V2APIPath)
 
-	return e
+	return "v2", e
 }
 
-func InitV2DocRouter(docHTML string, docYAML string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func InitV2DocRouter(docHTML string, docYAML string) (string, http.Handler) {
+	return "doc", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == V2DocPath {
 			if _, err := w.Write([]byte(docHTML)); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)

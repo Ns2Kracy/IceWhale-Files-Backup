@@ -15,22 +15,22 @@ paths:
   /backup:
     get:
       summary: Get all backup folders
-      operationId: getAllBackupFolders
+      operationId: getAllFolderBackups
       responses:
         "200":
-          $ref: "#/components/responses/BackupFoldersOK"
+          $ref: "#/components/responses/FolderBackupsOK"
         "500":
           $ref: "#/components/responses/ResponseInternalServerError"
 
   /backup/{client_id}:
     get:
       summary: Get backup folders by client ID
-      operationId: getBackupFoldersByClientID
+      operationId: getFolderBackupsByClientID
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
       responses:
         "200":
-          $ref: "#/components/responses/BackupFoldersOK"
+          $ref: "#/components/responses/FolderBackupsOK"
         "404":
           $ref: "#/components/responses/ResponseNotFound"
         "500":
@@ -38,11 +38,11 @@ paths:
 
     post:
       summary: Add a backup folder
-      operationId: addBackupFolder
+      operationId: addFolderBackup
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
       requestBody:
-        $ref: "#/components/requestBodies/BackupFolderRequest"
+        $ref: "#/components/requestBodies/FolderBackupRequest"
       responses:
         "200":
           $ref: "#/components/responses/ResponseOK"
@@ -53,7 +53,7 @@ paths:
 
     delete:
       summary: Delete a backup folder
-      operationId: deleteBackupFolder
+      operationId: deleteFolderBackup
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
         - $ref: "#/components/parameters/ClientFolderPathParam"
@@ -91,12 +91,12 @@ components:
         example: C:\Users\icewhale\Downloads
 
   requestBodies:
-    BackupFolderRequest:
+    FolderBackupRequest:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/BackupFolder"
+            $ref: "#/components/schemas/FolderBackup"
 
   responses:
     ResponseOK:
@@ -133,7 +133,7 @@ components:
           example:
             message: "Bad Request"
 
-    BackupFolderOK:
+    FolderBackupOK:
       description: OK
       content:
         application/json:
@@ -142,9 +142,9 @@ components:
               - $ref: "#/components/schemas/BaseResponse"
               - properties:
                   data:
-                    $ref: "#/components/schemas/BackupFolder"
+                    $ref: "#/components/schemas/FolderBackup"
 
-    BackupFoldersOK:
+    FolderBackupsOK:
       description: OK
       content:
         application/json:
@@ -155,7 +155,7 @@ components:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/BackupFolder"
+                      $ref: "#/components/schemas/FolderBackup"
 
   schemas:
     BaseResponse:
@@ -169,7 +169,7 @@ components:
       type: string
       example: "(阿管提供客户端 ID 样例)" # TODO
 
-    BackupFolder:
+    FolderBackup:
       properties:
         client_id:
           $ref: "#/components/schemas/ClientID"
@@ -178,6 +178,11 @@ components:
           description: name of the client
           type: string
           example: "John's Computer"
+      
+        client_type:
+          description: type of the client
+          type: string
+          example: "Windows"
 
         client_folder_path:
           description: |
@@ -210,19 +215,19 @@ components:
             > - If set to `true`, will keep history copy of files in the backup folder.
             > - If set to `false`, will only keep the latest version of files in the backup folder.
 
-        backup_folder_path:
+        folder_backup_path:
           description: path of the folder from server side to store backup files
           readOnly: true
           type: string
           example: /DATA/Backup/SomeClientID/C/Users/icewhale/Downloads
 
-        backup_folder_count:
+        folder_backup_count:
           description: number of files in the backup folder
           readOnly: true
           type: integer
           example: 2
 
-        backup_folder_size:
+        folder_backup_size:
           description: size of the backup folder in bytes
           readOnly: true
           type: integer

@@ -3,24 +3,22 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/IceWhaleTech/CasaOS-Common/model"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/IceWhale-Files-Backup/common"
 	"github.com/IceWhaleTech/IceWhale-Files-Backup/pkg/config"
-	"github.com/IceWhaleTech/IceWhale-Files-Backup/route"
 	"github.com/IceWhaleTech/IceWhale-Files-Backup/service"
 	"github.com/coreos/go-systemd/daemon"
 	"go.uber.org/zap"
-
-	util_http "github.com/IceWhaleTech/CasaOS-Common/utils/http"
 )
 
 var (
@@ -57,37 +55,8 @@ func main() {
 		service.MyService = service.NewService(config.CommonInfo.RuntimePath)
 	}
 
-	// setup listener
-	listener, err := net.Listen("tcp", net.JoinHostPort(common.Localhost, "0"))
-	if err != nil {
-		panic(err)
-	}
-
-	// initialize routers and register at gateway
-	{
-		apiPaths := []string{
-			route.V2APIPath,
-			route.V2DocPath,
-		}
-
-		for _, apiPath := range apiPaths {
-			if err := service.MyService.Gateway().CreateRoute(&model.Route{
-				Path:   apiPath,
-				Target: "http://" + listener.Addr().String(),
-			}); err != nil {
-				panic(err)
-			}
-		}
-	}
-
-	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
-
-	mux := &util_http.HandlerMultiplexer{
-		HandlerMap: map[string]http.Handler{
-			// TODO: add your handlers here
-			"doc": v2DocRouter,
-		},
-	}
+	apiService, apiServiceError := StartAPIService()
+	webdavService, webdavServiceError := StartWebDAVService()
 
 	// notify systemd that we are ready
 	{
@@ -98,17 +67,41 @@ func main() {
 		} else {
 			logger.Info("This process is not running as a systemd service.")
 		}
-
-		logger.Info("files backup service is listening...", zap.Any("address", listener.Addr().String()))
 	}
 
-	s := &http.Server{
-		Handler:           mux,
-		ReadHeaderTimeout: 5 * time.Second, // fix G112: Potential slowloris attack (see https://github.com/securego/gosec)
+	// Set up a channel to catch the Ctrl+C signal (SIGINT)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	// Wait for the signal or server error
+	select {
+	case <-signalChan:
+		fmt.Println("\nReceived signal, shutting down server...")
+	case err := <-apiServiceError:
+		fmt.Printf("Error starting API service: %s\n", err)
+		if err != http.ErrServerClosed {
+			os.Exit(1)
+		}
+	case err := <-webdavServiceError:
+		fmt.Printf("Error starting WebDAV service: %s\n", err)
+		if err != http.ErrServerClosed {
+			os.Exit(1)
+		}
 	}
 
-	err = s.Serve(listener) // not using http.serve() to fix G114: Use of net/http serve function that has no support for setting timeouts (see https://github.com/securego/gosec)
-	if err != nil {
-		panic(err)
+	// Create a context with a timeout to allow the server to shut down gracefully
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Shutdown the apiService
+	if err := apiService.Shutdown(ctx); err != nil {
+		logger.Error("Failed to shutdown api server", zap.Any("error", err))
+		os.Exit(1)
+	}
+
+	// Shutdown the webdavService
+	if err := webdavService.Shutdown(ctx); err != nil {
+		logger.Error("Failed to shutdown webdav server", zap.Any("error", err))
+		os.Exit(1)
 	}
 }

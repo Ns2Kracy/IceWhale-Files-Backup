@@ -8,5 +8,9 @@ type APPModel struct {
 	LogPath     string
 	LogSaveName string
 	LogFileExt  string
-	BackupPath  string
+
+	WebDAVPort     string
+	WebDAVRootPath string
+
+	BackupRootPath string
 }
