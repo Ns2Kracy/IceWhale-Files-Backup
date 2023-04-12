@@ -19,7 +19,7 @@ func (a *api) DeleteFolderBackup(ctx echo.Context, clientID codegen.ClientIDPara
 	panic("implement me")
 }
 
-func (a *api) AddFolderBackup(ctx echo.Context, clientID codegen.ClientIDParam) error {
+func (a *api) RunFolderBackup(ctx echo.Context, clientID codegen.ClientIDParam) error {
 	var request codegen.FolderBackupRequest
 	if err := ctx.Bind(&request); err != nil {
 		message := err.Error()

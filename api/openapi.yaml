@@ -37,8 +37,8 @@ paths:
           $ref: "#/components/responses/ResponseInternalServerError"
 
     post:
-      summary: Add a folder backup
-      operationId: addFolderBackup
+      summary: Run a folder backup
+      operationId: runFolderBackup
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
       requestBody:
@@ -178,7 +178,7 @@ components:
           description: name of the client
           type: string
           example: "John's Computer"
-      
+
         client_type:
           description: type of the client
           type: string
@@ -216,7 +216,7 @@ components:
             > - If set to `false`, will only keep the latest version of files in the folder backup.
           type: boolean
           default: true
-          
+
         folder_backup_path:
           description: path of the folder from server side to store backup files
           readOnly: true
