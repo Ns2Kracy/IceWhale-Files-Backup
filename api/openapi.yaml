@@ -217,19 +217,19 @@ components:
           type: boolean
           default: true
 
-        folder_backup_path:
+        backup_folder_path:
           description: path of the folder from server side to store backup files
           readOnly: true
           type: string
           example: /DATA/Backup/SomeClientID/C/Users/icewhale/Downloads
 
-        folder_backup_count:
+        backup_folder_count:
           description: number of files in the folder backup
           readOnly: true
           type: integer
           example: 2
 
-        folder_backup_size:
+        backup_folder_size:
           description: size of the folder backup in bytes
           readOnly: true
           type: integer

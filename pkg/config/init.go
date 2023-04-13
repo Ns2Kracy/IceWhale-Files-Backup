@@ -20,8 +20,6 @@ var (
 
 		WebDAVPort:     "7070",
 		WebDAVRootPath: "/DATA",
-
-		BackupRootPath: "/DATA/Backup",
 	}
 
 	Cfg            *ini.File

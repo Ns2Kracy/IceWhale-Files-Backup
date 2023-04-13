@@ -11,6 +11,4 @@ type APPModel struct {
 
 	WebDAVPort     string
 	WebDAVRootPath string
-
-	BackupRootPath string
 }

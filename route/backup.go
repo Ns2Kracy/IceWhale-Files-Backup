@@ -2,6 +2,7 @@ package route
 
 import (
 	"net/http"
+	"path/filepath"
 
 	"github.com/IceWhaleTech/IceWhale-Files-Backup/codegen"
 	"github.com/labstack/echo/v4"
@@ -26,9 +27,21 @@ func (a *api) RunFolderBackup(ctx echo.Context, clientID codegen.ClientIDParam) 
 		return ctx.JSON(http.StatusBadRequest, codegen.ResponseBadRequest{Message: &message})
 	}
 
+	if request.ClientId == nil || request.ClientFolderPath == nil {
+		message := "certain fields are missing in the request body"
+		return ctx.JSON(http.StatusBadRequest, codegen.ResponseBadRequest{Message: &message})
+	}
+
 	// TODO
 
-	return ctx.JSON(http.StatusOK, codegen.ResponseOK{
+	folderBackupPath := filepath.Join("Backup", *request.ClientId, *request.ClientFolderPath)
+
+	folderBackup := codegen.FolderBackup{
+		FolderBackupPath: &folderBackupPath,
 		// TODO
+	}
+
+	return ctx.JSON(http.StatusOK, codegen.FolderBackupOK{
+		Data: &folderBackup,
 	})
 }
