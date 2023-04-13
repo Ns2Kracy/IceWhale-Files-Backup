@@ -45,7 +45,7 @@ paths:
         $ref: "#/components/requestBodies/FolderBackupRequest"
       responses:
         "200":
-          $ref: "#/components/responses/ResponseOK"
+          $ref: "#/components/responses/FolderBackupOK"
         "400":
           $ref: "#/components/responses/ResponseBadRequest"
         "500":
