@@ -193,6 +193,22 @@ components:
           type: string
           example: C:\Users\icewhale\Downloads
 
+        client_folder_file_sizes:
+          description: |
+            sizes of files under the folder from client side to be backed up
+
+            > - This key is case sensitive. Make sure the value is consistent when client runs on Windows.
+            > - The size is in bytes.
+
+          writeOnly: true
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          example:
+            'C:\Users\icewhale\Downloads\1.txt': 123
+            'C:\Users\icewhale\Downloads\Movies\2.mp4': 4567890
+
         client_folder_file_hashes:
           description: |
             hashes of files under the folder from client side to be backed up

@@ -2,9 +2,9 @@ package route
 
 import (
 	"net/http"
-	"path/filepath"
 
 	"github.com/IceWhaleTech/IceWhale-Files-Backup/codegen"
+	"github.com/IceWhaleTech/IceWhale-Files-Backup/service"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,21 +27,22 @@ func (a *api) RunFolderBackup(ctx echo.Context, clientID codegen.ClientIDParam) 
 		return ctx.JSON(http.StatusBadRequest, codegen.ResponseBadRequest{Message: &message})
 	}
 
-	if request.ClientId == nil || request.ClientFolderPath == nil {
+	if request.ClientId == nil ||
+		request.ClientFolderPath == nil ||
+		request.ClientFolderFileSizes == nil ||
+		request.ClientFolderFileHashes == nil {
 		message := "certain fields are missing in the request body"
 		return ctx.JSON(http.StatusBadRequest, codegen.ResponseBadRequest{Message: &message})
 	}
 
-	// TODO
-
-	folderBackupPath := filepath.Join("Backup", *request.ClientId, *request.ClientFolderPath)
-
-	folderBackup := codegen.FolderBackup{
-		FolderBackupPath: &folderBackupPath,
-		// TODO
+	// TODO - compare with file hashes and only backup the files that have changed/deleted
+	folderBackup, err := service.Proceed(request)
+	if err != nil {
+		message := err.Error()
+		return ctx.JSON(http.StatusInternalServerError, codegen.ResponseInternalServerError{Message: &message})
 	}
 
 	return ctx.JSON(http.StatusOK, codegen.FolderBackupOK{
-		Data: &folderBackup,
+		Data: folderBackup,
 	})
 }
