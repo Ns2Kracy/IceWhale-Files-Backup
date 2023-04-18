@@ -300,8 +300,8 @@ components:
           readOnly: true
           type: boolean
 
-        transfer_speed:
-          description: speed of the backup in bytes per second
+        remaining_count:
+          description: count of remaining folders to be backed up
           readOnly: true
           type: integer
-          example: 1024
+          example: 12

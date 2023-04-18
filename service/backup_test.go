@@ -25,17 +25,6 @@ func createFileWithContent(dir, name, content string) error {
 	return err
 }
 
-func createBackupFolder(root, folderName string) (string, error) {
-	folderPath := filepath.Join(root, folderName)
-	if err := os.Mkdir(folderPath, 0o700); err != nil {
-		return "", err
-	}
-
-	markFilePath := filepath.Join(folderPath, common.MetadataFileName)
-	err := os.WriteFile(markFilePath, []byte{}, 0o600)
-	return folderPath, err
-}
-
 func TestGetAllBackups(t *testing.T) {
 	defer goleak.VerifyNone(t)
 
@@ -78,9 +67,9 @@ func TestGetAllBackups(t *testing.T) {
 	buf3, err := json.Marshal(backup3)
 	assert.NoError(t, err)
 
-	assert.NoError(t, os.WriteFile(client1Folder1Metadata, buf1, 0o644))
-	assert.NoError(t, os.WriteFile(client1Folder2Metadata, buf2, 0o644))
-	assert.NoError(t, os.WriteFile(client2Folder1Metadata, buf3, 0o644))
+	assert.NoError(t, os.WriteFile(client1Folder1Metadata, buf1, 0o600))
+	assert.NoError(t, os.WriteFile(client1Folder2Metadata, buf2, 0o600))
+	assert.NoError(t, os.WriteFile(client2Folder1Metadata, buf3, 0o600))
 
 	// Run test
 	ctx := context.Background()
@@ -353,7 +342,7 @@ func TestSaveAndLoadMetadata(t *testing.T) {
 		KeepHistoryCopy:     lo.ToPtr(true),
 		LastBackupSucceeded: lo.ToPtr(true),
 		LastBackupTime:      lo.ToPtr(int64(1619977711000)),
-		TransferSpeed:       lo.ToPtr(1024),
+		RemainingCount:      lo.ToPtr(12),
 	}
 
 	// Save metadata

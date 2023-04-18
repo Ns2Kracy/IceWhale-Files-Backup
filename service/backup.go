@@ -22,13 +22,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type backup struct {
+type BackupService struct {
 	backupRoot string
 	// clientID -> folder path -> cancel function
 	BackupsInProgress map[string]map[string]context.CancelFunc // TODO: add ongoing backup to BackupsInProgress
 }
 
-func (b *backup) GetAllBackups(ctx context.Context, full bool) (map[string][]codegen.FolderBackup, error) {
+func (b *BackupService) GetAllBackups(ctx context.Context, full bool) (map[string][]codegen.FolderBackup, error) {
 	allBackups := map[string][]codegen.FolderBackup{}
 	// for each child folder under backupRoot, call GetBackupsByPath
 	err := filepath.WalkDir(b.backupRoot, func(path string, d fs.DirEntry, err error) error {
@@ -65,7 +65,7 @@ func (b *backup) GetAllBackups(ctx context.Context, full bool) (map[string][]cod
 	return allBackups, nil
 }
 
-func (b *backup) GetBackupsByClientID(ctx context.Context, clientID string, full bool) ([]codegen.FolderBackup, error) {
+func (b *BackupService) GetBackupsByClientID(ctx context.Context, clientID string, full bool) ([]codegen.FolderBackup, error) {
 	// traverse the backup folder and get all the backups
 	backupRootByClient := filepath.Join(b.backupRoot, clientID)
 	backups, err := GetBackupsByPath(backupRootByClient, full)
@@ -76,7 +76,7 @@ func (b *backup) GetBackupsByClientID(ctx context.Context, clientID string, full
 	return backups, nil
 }
 
-func (b *backup) IsClientIDExists(clientID string) (bool, error) {
+func (b *BackupService) IsClientIDExists(clientID string) (bool, error) {
 	backupRootByClient := filepath.Join(b.backupRoot, clientID)
 	if _, err := os.Stat(backupRootByClient); err != nil {
 		if os.IsNotExist(err) {
@@ -87,7 +87,7 @@ func (b *backup) IsClientIDExists(clientID string) (bool, error) {
 	return true, nil
 }
 
-func (b *backup) IsBackupExists(clientID, clientFolderPath string) (bool, error) {
+func (b *BackupService) IsBackupExists(clientID, clientFolderPath string) (bool, error) {
 	backupRootByClient := filepath.Join(b.backupRoot, clientID)
 
 	// convert Windows path to Unix path
@@ -103,7 +103,7 @@ func (b *backup) IsBackupExists(clientID, clientFolderPath string) (bool, error)
 	return true, nil
 }
 
-func (b *backup) Proceed(backup codegen.FolderBackup) (*codegen.FolderBackup, error) {
+func (b *BackupService) Proceed(backup codegen.FolderBackup) (*codegen.FolderBackup, error) {
 	if backup.ClientFolderFileHashes == nil {
 		return nil, fmt.Errorf("client folder file hashes is nil")
 	}
@@ -205,7 +205,7 @@ func (b *backup) Proceed(backup codegen.FolderBackup) (*codegen.FolderBackup, er
 	return &backup, nil
 }
 
-func (b *backup) DeleteBackupsByClientID(ctx context.Context, clientID, clientFolderPath string) error {
+func (b *BackupService) DeleteBackupsByClientID(ctx context.Context, clientID, clientFolderPath string) error {
 	// convert Windows path to Unix path
 	clientFolderPathNormalized := Normalize(clientFolderPath)
 
@@ -254,7 +254,7 @@ func (b *backup) DeleteBackupsByClientID(ctx context.Context, clientID, clientFo
 	return nil
 }
 
-func NewBackupService() *backup {
+func NewBackupService() *BackupService {
 	backupRoot := filepath.Join(config.AppInfo.DataRootPath, common.BackupRootFolder)
 
 	if _, err := os.Stat(backupRoot); err != nil {
@@ -268,7 +268,7 @@ func NewBackupService() *backup {
 		}
 	}
 
-	return &backup{
+	return &BackupService{
 		backupRoot: backupRoot,
 
 		BackupsInProgress: map[string]map[string]context.CancelFunc{},

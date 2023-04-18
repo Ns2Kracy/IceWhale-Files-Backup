@@ -59,20 +59,3 @@ func TestSizeAndCount(t *testing.T) {
 		assert.Equal(t, numFiles, fileCount, "File count mismatch")
 	})
 }
-
-func createTempFileWithContent(dir, content string) (string, error) {
-	file, err := os.CreateTemp(dir, "test")
-	if err != nil {
-		return "", err
-	}
-
-	if _, err := file.WriteString(content); err != nil {
-		return "", err
-	}
-
-	if err := file.Close(); err != nil {
-		return "", err
-	}
-
-	return file.Name(), nil
-}

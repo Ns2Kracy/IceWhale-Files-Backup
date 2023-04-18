@@ -5,13 +5,13 @@ import "github.com/IceWhaleTech/CasaOS-Common/external"
 var MyService Services
 
 type Services interface {
-	Backup() *backup
+	Backup() *BackupService
 
 	Gateway() external.ManagementService
 }
 
 type services struct {
-	backup  *backup
+	backup  *BackupService
 	gateway external.ManagementService
 }
 
@@ -27,7 +27,7 @@ func NewService(RuntimePath string) Services {
 	}
 }
 
-func (s *services) Backup() *backup {
+func (s *services) Backup() *BackupService {
 	return s.backup
 }
 
