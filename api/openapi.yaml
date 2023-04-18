@@ -16,9 +16,11 @@ paths:
     get:
       summary: Get all folder backups
       operationId: getAllFolderBackups
+      parameters:
+        - $ref: "#/components/parameters/FullParam"
       responses:
         "200":
-          $ref: "#/components/responses/FolderBackupsOK"
+          $ref: "#/components/responses/AllFolderBackupsOK"
         "500":
           $ref: "#/components/responses/ResponseInternalServerError"
 
@@ -28,6 +30,7 @@ paths:
       operationId: getFolderBackupsByClientID
       parameters:
         - $ref: "#/components/parameters/ClientIDParam"
+        - $ref: "#/components/parameters/FullParam"
       responses:
         "200":
           $ref: "#/components/responses/FolderBackupsOK"
@@ -90,6 +93,14 @@ components:
         type: string
         example: C:\Users\icewhale\Downloads
 
+    FullParam:
+      name: full
+      in: query
+      description: get full information, e.g. file count and total size
+      schema:
+        type: boolean
+        default: false
+
   requestBodies:
     FolderBackupRequest:
       required: true
@@ -144,6 +155,21 @@ components:
                   data:
                     $ref: "#/components/schemas/FolderBackup"
 
+    AllFolderBackupsOK:
+      description: OK
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/BaseResponse"
+              - properties:
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/FolderBackup"
+
     FolderBackupsOK:
       description: OK
       content:
@@ -167,7 +193,9 @@ components:
 
     ClientID:
       type: string
+      readOnly: true
       example: "(阿管提供客户端 ID 样例)" # TODO
+      x-go-name: ClientID
 
     FolderBackup:
       properties:
@@ -234,7 +262,12 @@ components:
           default: true
 
         backup_folder_path:
-          description: path of the folder from server side to store backup files
+          description: |
+            relative path of the folder from server side to store backup files
+
+            > It is relative to the data folder. If data folder is `/DATA` and the full backup path
+            > is `/DATA/Backup/SomeClientID/C/Users/icewhale/Downloads`, then the value of this field
+            > is `Backup/SomeClientID/C/Users/icewhale/Downloads`.
           readOnly: true
           type: string
           example: /DATA/Backup/SomeClientID/C/Users/icewhale/Downloads
@@ -249,12 +282,14 @@ components:
           description: size of the folder backup in bytes
           readOnly: true
           type: integer
+          format: int64
           example: 1024
 
         last_backup_time:
           description: last backup time in milliseconds
           readOnly: true
           type: integer
+          format: int64
           example: 1681159361000
 
         last_backup_succeeded:

@@ -9,6 +9,6 @@ type APPModel struct {
 	LogSaveName string
 	LogFileExt  string
 
-	WebDAVPort     string
-	WebDAVRootPath string
+	WebDAVPort   string
+	DataRootPath string
 }

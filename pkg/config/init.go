@@ -18,8 +18,8 @@ var (
 		LogSaveName: common.FilesBackupServiceName,
 		LogFileExt:  "log",
 
-		WebDAVPort:     "7070",
-		WebDAVRootPath: "/DATA",
+		WebDAVPort:   "7070",
+		DataRootPath: "/DATA",
 	}
 
 	Cfg            *ini.File

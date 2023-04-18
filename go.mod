@@ -7,7 +7,9 @@ require (
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/getkin/kin-openapi v0.115.0
 	github.com/labstack/echo/v4 v4.10.2
+	github.com/samber/lo v1.38.1
 	github.com/stretchr/testify v1.8.2
+	go.uber.org/goleak v1.1.11
 	golang.org/x/net v0.8.0
 	gopkg.in/ini.v1 v1.67.0
 )
@@ -50,6 +52,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

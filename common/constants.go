@@ -5,4 +5,8 @@ const (
 
 	FilesBackupVersion     = "v0.0.1"
 	FilesBackupServiceName = "files-backup"
+
+	BackupRootFolder = "Backup"
+	MetadataFileName = ".zima_backup"
+	Throttling       = 4
 )

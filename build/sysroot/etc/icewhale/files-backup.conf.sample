@@ -6,4 +6,4 @@ LogPath = /var/log/icewhale/
 LogSaveName = files-backup
 LogFileExt = log
 WebDAVPort = 7070
-WebDAVRootPath = /DATA
+DataRootPath = /DATA

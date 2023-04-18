@@ -21,7 +21,7 @@ func StartWebDAVService() (*http.Server, chan error) {
 	webDAVServerError := make(chan error, 1)
 	webDAVServer := &http.Server{
 		Handler: &webdav.Handler{
-			FileSystem: webdav.Dir(config.AppInfo.WebDAVRootPath),
+			FileSystem: webdav.Dir(config.AppInfo.DataRootPath),
 			LockSystem: webdav.NewMemLS(),
 			Logger: func(r *http.Request, err error) {
 				if err != nil {
