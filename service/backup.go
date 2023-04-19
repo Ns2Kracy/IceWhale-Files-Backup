@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
@@ -24,8 +25,10 @@ import (
 
 type BackupService struct {
 	backupRoot string
-	// clientID -> folder path -> cancel function
-	BackupsInProgress map[string]map[string]context.CancelFunc // TODO: add ongoing backup to BackupsInProgress
+
+	proceedingPaths map[string]*sync.Mutex
+	deletingPaths   map[string]*sync.Mutex
+	lockMutex       *sync.Mutex
 }
 
 func (b *BackupService) GetAllBackups(ctx context.Context, full bool) (map[string][]codegen.FolderBackup, error) {
@@ -108,9 +111,23 @@ func (b *BackupService) Proceed(backup codegen.FolderBackup) (*codegen.FolderBac
 		return nil, fmt.Errorf("client folder file hashes is nil")
 	}
 
+	b.lockMutex.Lock()
+	defer b.lockMutex.Unlock()
+
 	// convert Windows path to Unix path
 	clientFolderPathNormalized := Normalize(*backup.ClientFolderPath)
 	backupFolderPath := filepath.Join(common.BackupRootFolder, *backup.ClientID, clientFolderPathNormalized)
+
+	if _, ok := b.proceedingPaths[backupFolderPath]; ok {
+		return nil, fmt.Errorf("backup is already proceeding")
+	}
+
+	b.proceedingPaths[backupFolderPath] = &sync.Mutex{}
+	defer delete(b.proceedingPaths, backupFolderPath)
+
+	b.proceedingPaths[backupFolderPath].Lock()
+	defer b.proceedingPaths[backupFolderPath].Unlock()
+
 	if err := os.MkdirAll(backupFolderPath, 0o755); err != nil {
 		return nil, err
 	}
@@ -134,20 +151,32 @@ func (b *BackupService) Proceed(backup codegen.FolderBackup) (*codegen.FolderBac
 		return nil, err
 	}
 
+	clientFileMap := map[string]string{}
+	for clientFile := range *backup.ClientFolderFileSizes {
+		clientFileMap[Normalize(clientFile)] = clientFile
+	}
+
 	for _, file := range nonBackupFiles {
 
 		shouldBackup := false
 		shouldMove := false
 
+		clientFile, ok := clientFileMap[strings.TrimLeft(strings.TrimPrefix(file, backupFolderFullpath), `/\`)]
+		if !ok {
+			// file doesn't exist in the client folder, so consider it has been deleted.
+			shouldMove = true
+			shouldBackup = true
+		}
+
 		// check by comparing the sizes
-		{
+		if !shouldBackup {
 			fileInfo, err := os.Stat(file)
 			if err != nil {
 				return nil, err
 			}
 
 			// if file has been deleted, or its size/hash has changed, then backup it
-			if size, ok := (*backup.ClientFolderFileSizes)[file]; !ok {
+			if size, ok := (*backup.ClientFolderFileSizes)[clientFile]; !ok {
 
 				// file doesn't exist in the client folder, so consider it has been deleted.
 				// thus the file should be moved instead of copied.
@@ -166,7 +195,7 @@ func (b *BackupService) Proceed(backup codegen.FolderBackup) (*codegen.FolderBac
 				return nil, err
 			}
 
-			if hash, ok := (*backup.ClientFolderFileHashes)[file]; !ok || hash != fileHash {
+			if hash, ok := (*backup.ClientFolderFileHashes)[clientFile]; !ok || hash != fileHash {
 				// backup the file with the same size but different hash by renaming.
 
 				// WebDAV doesn't support modification time and checksum, so Rclone will be looking
@@ -224,6 +253,20 @@ func (b *BackupService) DeleteBackupsByClientID(ctx context.Context, clientID, c
 		return err
 	}
 
+	b.lockMutex.Lock()
+	defer b.lockMutex.Unlock()
+
+	if _, ok := b.deletingPaths[backupFolderPath]; ok {
+		logger.Info("backup folder is already being deleted", zap.String("path", backupFolderPath))
+		return nil
+	}
+
+	b.deletingPaths[backupFolderPath] = &sync.Mutex{}
+	defer delete(b.deletingPaths, backupFolderPath)
+
+	b.deletingPaths[backupFolderPath].Lock()
+	defer b.deletingPaths[backupFolderPath].Unlock()
+
 	// delete the backup folder
 	currentPath := backupFolderPath
 
@@ -271,7 +314,9 @@ func NewBackupService() *BackupService {
 	return &BackupService{
 		backupRoot: backupRoot,
 
-		BackupsInProgress: map[string]map[string]context.CancelFunc{},
+		proceedingPaths: map[string]*sync.Mutex{},
+		deletingPaths:   map[string]*sync.Mutex{},
+		lockMutex:       &sync.Mutex{},
 	}
 }
 
