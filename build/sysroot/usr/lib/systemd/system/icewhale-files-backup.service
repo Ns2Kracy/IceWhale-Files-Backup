@@ -1,0 +1,12 @@
+[Unit]
+After=casaos-message-bus.service
+Description=IceWhale Files Service
+
+[Service]
+ExecStart=/usr/bin/icewhale-files-backup
+PIDFile=/var/run/casaos/icewhale-files-backup.pid
+Restart=always
+Type=notify
+
+[Install]
+WantedBy=multi-user.target

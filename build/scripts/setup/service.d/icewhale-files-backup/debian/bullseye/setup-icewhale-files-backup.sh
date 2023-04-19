@@ -1,0 +1,1 @@
+../setup-icewhale-files-backup.sh
